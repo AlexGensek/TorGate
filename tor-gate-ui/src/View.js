@@ -165,7 +165,7 @@ class View extends React.Component {
         },
 
         getUserMessages: (socket, onion) => {
-            socket.emit(commands.GET_USER_MESSAGES,{onion: onion});
+            onion && socket.emit(commands.GET_USER_MESSAGES,{onion: onion});
         },
 
         sendMessage: (socket, onion, message) => {
