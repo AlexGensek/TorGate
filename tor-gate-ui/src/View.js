@@ -211,7 +211,8 @@ class View extends React.Component {
 
         this.timer = setInterval(() => {
             this.actions.getUsers(socket);
-            this.actions.getUserMessages(socket, this.state.current.onion);
+            this.state.current &&
+                this.actions.getUserMessages(socket, this.state.current.onion);
             }, 1000);
     }
 
