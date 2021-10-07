@@ -231,10 +231,10 @@ class View extends React.Component {
         return (
             <main>
                 <aside data-open={true}>
-                    <UserHeader onion={myOnion || "toolongtormagiclink00"}/>
+                    <UserHeader onion={myOnion}/>
                     <ChatList
                         user={myOnion}
-                        contacts={contacts || [{username: "Piter Pen", onion: "123"}, {username: "Jack", onion: "445"}]}
+                        contacts={contacts}
                         messages={messages || {}}
                         current={current || {}}
                         actions={this.actions}
