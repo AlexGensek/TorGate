@@ -1,0 +1,114 @@
+Commands:
+
+1) ADD_USER:
+    Add user to contacts (Front -> Back)
+FE >>
+    {
+        username: "Fred"
+        onion: "sfsdgdsfgdaF"
+    }
+
+BE >>
+    {
+        status: "success"
+    }
+
+2) GET_USERS:
+    Get contact list, onion (Front -> Back)
+FE >>
+    {
+    }
+
+BE >>
+    {
+        onion: "sdgdgfsdfgsd", // MY
+        contacts: [
+            {
+                "username": "Fred"
+                "onion": "sdfgsssndfghfdgjghd"
+            },
+            {
+                "username": "Bob"
+                "onion": "sdfgsssdfsdfsndfghfdgjghd"
+            }
+        ]
+    }
+
+3) GET_USER_MESSAGES:
+    Get all messages of user (Front -> Back)
+
+FE >>
+    {
+        "onion": "sdfdgdsffdgfds"
+    }
+
+BE >>
+    {
+        "onion": "sdfdgdsffdgfds"
+        "messages": [ // ALL HISTORY
+            {
+                "timestamp": "May 28, 10-23-43",
+                "message": "Hello!",
+                "direction": 0
+            },
+            {
+                "timestamp": "May 28, 10-23-47",
+                "message": "Hello, Bob!",
+                "direction": 1
+            }
+        ]
+    }
+
+
+
+4) NEW_USER_MESSAGE:
+    New message notification (Back -> Front)
+
+BE >>
+    {
+        "onion": "sdfdgdsffdgfds"
+        "messages": [ // ONLY NEW
+            {
+                "timestamp": "May 28, 10-23-43",
+                "message": "Hello!",
+                "direction": 0
+            },
+            {
+                "timestamp": "May 28, 10-23-47",
+                "message": "Hello, Bob!",
+                "direction": 1
+            }
+        ]
+    }
+
+5) SEND_USER_MESSAGE:
+    Send message (Front -> Back)
+
+FE >>
+    {
+        "onion": "sdfdgdsffdgfds"
+        "message": "Hello!"
+    }
+    
+BE >>
+    {
+        status: "success" // or error describing
+    }
+
+
+
+create table USERS
+(
+    onion VARCHAR PRIMARY KEY
+    username VARCHAR,
+);
+
+
+create table MESSAGES
+(
+    id SERIAL PRIMARY KEY,
+    time TIMESTAMP,
+    message TEXT,
+    chat VARCHAR references USERS(id),
+    direction //0,1
+);

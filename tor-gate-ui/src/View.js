@@ -1,40 +1,34 @@
-import React, {Component} from 'react';
+import React from 'react';
+import io from 'socket.io-client';
 import {UserHeader} from "./components/UserHeader";
+import {RoomHeader} from "./components/RoomHeader";
+import {WelcomeScreen} from "./components/WelcomeScreen";
+import {ChatList} from "./components/ChatList";
+import {CreateMessageForm} from "./components/CreateMessageForm";
+import {MessageList} from "./components/MessageList";
+import {commands} from "./protocol";
 
 class View extends React.Component {
     state = {
-        user: {},
-        room: {},
+        myOnion: "",
         messages: {},
-        typing: {},
-        sidebarOpen: false,
-        userListOpen: window.innerWidth > 1000,
     }
 
     actions = {
         // --------------------------------------
-        // UI
-        // --------------------------------------
-
-        setSidebar: sidebarOpen => this.setState({ sidebarOpen }),
-        setUserList: userListOpen => this.setState({ userListOpen }),
-
-        // --------------------------------------
         // User
         // --------------------------------------
 
-        setUser: user => this.setState({ user }),
+        setUser: user => this.setState({user}),
 
         // --------------------------------------
         // Room
         // --------------------------------------
 
-        setRoom: room => {
-            this.setState({ room, sidebarOpen: false })
+        setContact: contact => {
+            this.setState({current: contact})
             this.actions.scrollToEnd()
         },
-
-        removeRoom: room => this.setState({ room: {} }),
 
         joinRoom: room => {
             this.actions.setRoom(room)
@@ -47,42 +41,42 @@ class View extends React.Component {
         },
 
         subscribeToRoom: room =>
-            !this.state.user.roomSubscriptions[room.id] &&
-            this.state.user.subscribeToRoom({
+            !this.state.myOnion.roomSubscriptions[room.id] &&
+            this.state.myOnion.subscribeToRoom({
                 roomId: room.id,
-                hooks: { onMessage: this.actions.addMessage },
+                hooks: {onMessage: this.actions.addMessage},
             }),
 
         createRoom: options =>
-            this.state.user.createRoom(options).then(this.actions.joinRoom),
+            this.state.myOnion.createRoom(options).then(this.actions.joinRoom),
 
         createConvo: options => {
-            if (options.user.id !== this.state.user.id) {
-                const exists = this.state.user.rooms.find(
+            if (options.user.id !== this.state.myOnion.id) {
+                const exists = this.state.myOnion.rooms.find(
                     x =>
-                        x.name === options.user.id + this.state.user.id ||
-                        x.name === this.state.user.id + options.user.id
+                        x.name === options.user.id + this.state.myOnion.id ||
+                        x.name === this.state.myOnion.id + options.user.id
                 )
                 exists
                     ? this.actions.joinRoom(exists)
                     : this.actions.createRoom({
-                        name: this.state.user.id + options.user.id,
+                        name: this.state.myOnion.id + options.user.id,
                         addUserIds: [options.user.id],
                         private: true,
                     })
             }
         },
 
-        addUserToRoom: ({ userId, roomId = this.state.room.id }) =>
-            this.state.user
-                .addUserToRoom({ userId, roomId })
+        addUserToRoom: ({userId, roomId = this.state.room.id}) =>
+            this.state.myOnion
+                .addUserToRoom({userId, roomId})
                 .then(this.actions.setRoom),
 
-        removeUserFromRoom: ({ userId, roomId = this.state.room.id }) =>
-            userId === this.state.user.id
-                ? this.state.user.leaveRoom({ roomId })
-                : this.state.user
-                    .removeUserFromRoom({ userId, roomId })
+        removeUserFromRoom: ({userId, roomId = this.state.room.id}) =>
+            userId === this.state.myOnion.id
+                ? this.state.myOnion.leaveRoom({roomId})
+                : this.state.myOnion
+                    .removeUserFromRoom({userId, roomId})
                     .then(this.actions.setRoom),
 
         // --------------------------------------
@@ -90,8 +84,8 @@ class View extends React.Component {
         // --------------------------------------
 
         setCursor: (roomId, position) =>
-            this.state.user
-                .setReadCursor({ roomId, position: parseInt(position) })
+            this.state.myOnion
+                .setReadCursor({roomId, position: parseInt(position)})
                 .then(x => this.forceUpdate()),
 
         // --------------------------------------
@@ -113,7 +107,7 @@ class View extends React.Component {
             }))
             // Update cursor if the message was read
             if (roomId === this.state.room.id) {
-                const cursor = this.state.user.readCursor({ roomId }) || {}
+                const cursor = this.state.myOnion.readCursor({roomId}) || {}
                 const cursorPosition = cursor.position || 0
                 cursorPosition < messageId && this.actions.setCursor(roomId, messageId)
                 this.actions.scrollToEnd()
@@ -124,10 +118,10 @@ class View extends React.Component {
 
         runCommand: command => {
             const commands = {
-                invite: ([userId]) => this.actions.addUserToRoom({ userId }),
-                remove: ([userId]) => this.actions.removeUserFromRoom({ userId }),
+                invite: ([userId]) => this.actions.addUserToRoom({userId}),
+                remove: ([userId]) => this.actions.removeUserFromRoom({userId}),
                 leave: ([userId]) =>
-                    this.actions.removeUserFromRoom({ userId: this.state.user.id }),
+                    this.actions.removeUserFromRoom({userId: this.state.myOnion.id}),
             }
             const name = command.split(' ')[0]
             const args = command.split(' ').slice(1)
@@ -142,46 +136,14 @@ class View extends React.Component {
             }, 0),
 
         // --------------------------------------
-        // Typing Indicators
-        // --------------------------------------
-
-        isTyping: (room, user) =>
-            this.setState(prevState => ({
-                typing: {
-                    ...prevState.typing,
-                    [room.id]: {
-                        ...prevState.typing[room.id],
-                        [user.id]: true
-                    }
-                }
-            })),
-
-        notTyping: (room, user) =>
-            this.setState(prevState => ({
-                typing: {
-                    ...prevState.typing,
-                    [room.id]: {
-                        ...prevState.typing[room.id],
-                        [user.id]: false
-                    }
-                }
-            })),
-
-        // --------------------------------------
-        // Presence
-        // --------------------------------------
-
-        setUserPresence: () => this.forceUpdate(),
-
-        // --------------------------------------
         // Notifications
         // --------------------------------------
 
         showNotification: message => {
             if (
                 'Notification' in window &&
-                this.state.user.id &&
-                this.state.user.id !== message.senderId &&
+                this.state.myOnion.id &&
+                this.state.myOnion.id !== message.senderId &&
                 document.visibilityState === 'hidden'
             ) {
                 const notification = new Notification(
@@ -197,60 +159,103 @@ class View extends React.Component {
                 })
             }
         },
+
+        getUsers: socket => {
+            socket.emit(commands.GET_USERS, JSON.stringify({}));
+        },
+
+        getUserMessages: (socket, onion) => {
+            socket.emit(commands.GET_USER_MESSAGES, JSON.stringify({onion: onion}));
+        },
+
+        sendMessage: (socket, onion, message) => {
+            socket.emit(commands.SEND_USER_MESSAGE, JSON.stringify({
+                onion: onion,
+                message: message
+            }));
+        }
     }
 
+
     componentDidMount() {
-        // 'Notification' in window && Notification.requestPermission()
-        // existingUser
-        //     ? ChatManager(this, JSON.parse(existingUser))
-        //     : fetch('https://chatkit-demo-server.herokuapp.com/auth', {
-        //         method: 'POST',
-        //         body: JSON.stringify({ code: authCode }),
-        //     })
-        //         .then(res => res.json())
-        //         .then(user => {
-        //             user.version = version
-        //             window.localStorage.setItem('chatkit-user', JSON.stringify(user))
-        //             window.history.replaceState(null, null, window.location.pathname)
-        //             ChatManager(this, user)
-        //         })
+        const socket = io(`http://loclhost:3000`); // FIXME
+        this.setState({socket: socket});
+        socket.on(commands.ADD_USER, (m) => {
+            console.log("add user");
+        });
+        socket.on(commands.GET_USERS, (m) => {
+            const msg = JSON.parse(m);
+            this.setState({
+                myOnion: msg.onion,
+                contacts: msg.contacts
+            });
+        });
+        socket.on(commands.GET_USER_MESSAGES, (m) => {
+            const msg = JSON.parse(m);
+            const onion = msg.onion;
+            const messages = msg.messages;
+            this.setState(prevState => ({
+                messages: {
+                    ...prevState.messages,
+                    [onion]: {messages}
+                }
+            }))
+
+        });
+        socket.on(commands.NEW_USER_MESSAGE, (m) => {
+            console.log("new message");
+        });
+        socket.on(commands.SEND_USER_MESSAGE, (m) => {
+            console.log("send message");
+        });
+
+        this.timer = setInterval(() => {
+            this.actions.getUsers(socket);
+            this.actions.getUserMessages(socket);
+            }, 1000);
+    }
+
+    componentWillUnmount() {
+        this.timer = null;
     }
 
     render() {
         const {
-            user,
-            room,
+            myOnion,
+            current,
+            contacts,
             messages,
-            typing,
-            sidebarOpen,
-            userListOpen,
         } = this.state
-        const { createRoom, createConvo, removeUserFromRoom } = this.actions
+        const {createRoom, createConvo, removeUserFromRoom} = this.actions
 
         return (
             <main>
-                <aside data-open={sidebarOpen}>
-                    <UserHeader user={user} />
+                <aside data-open={true}>
+                    <UserHeader onion={myOnion || "toolongtormagiclink00"}/>
+                    <ChatList
+                        user={myOnion}
+                        contacts={contacts || [{username: "Piter Pen", onion: "123"}, {username: "Jack", onion: "445"}]}
+                        messages={messages || {}}
+                        current={current || {}}
+                        actions={this.actions}
+                    />
+
                 </aside>
                 <section>
-                    {/*<RoomHeader state={this.state} actions={this.actions} />*/}
-                    {/*{room.id ? (*/}
-                    {/*    <row->*/}
-                    {/*        <col->*/}
-                    {/*            <MessageList*/}
-                    {/*                user={user}*/}
-                    {/*                messages={messages[room.id]}*/}
-                    {/*                createConvo={createConvo}*/}
-                    {/*            />*/}
-                    {/*            <TypingIndicator typing={typing[room.id]} />*/}
-                                {/*<CreateMessageForm state={this.state} actions={this.actions} />*/}
-                            {/*</col->*/}
-                        {/*</row->*/}
-                    {/*) : user.id ? (*/}
-                    {/*    <JoinRoomScreen />*/}
-                    {/*) : (*/}
-                    {/*    <WelcomeScreen />*/}
-                    {/*)}*/}
+                    <RoomHeader state={this.state} actions={this.actions}/>
+                    {
+                        current ? (
+                                <row->
+                                    <col->
+                                        <MessageList
+                                            contact={current}
+                                            messages={messages[current]}
+                                        />
+                                        <CreateMessageForm state={this.state} actions={this.actions}/>
+                                    </col->
+                                </row->) :
+                            <WelcomeScreen/>
+                    }
                 </section>
             </main>
         )
