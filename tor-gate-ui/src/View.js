@@ -161,37 +161,37 @@ class View extends React.Component {
         },
 
         getUsers: socket => {
-            socket.emit(commands.GET_USERS, JSON.stringify({}));
+            socket.emit(commands.GET_USERS, {});
         },
 
         getUserMessages: (socket, onion) => {
-            socket.emit(commands.GET_USER_MESSAGES, JSON.stringify({onion: onion}));
+            socket.emit(commands.GET_USER_MESSAGES,{onion: onion});
         },
 
         sendMessage: (socket, onion, message) => {
-            socket.emit(commands.SEND_USER_MESSAGE, JSON.stringify({
+            socket.emit(commands.SEND_USER_MESSAGE, {
                 onion: onion,
                 message: message
-            }));
+            });
         }
     }
 
 
     componentDidMount() {
-        const socket = io(`http://loclhost:5000`); // FIXME
+        const socket = io(`http://localhost:5000`); // FIXME
         this.setState({socket: socket});
         socket.on(commands.ADD_USER, (m) => {
             console.log("add user");
         });
         socket.on(commands.GET_USERS, (m) => {
-            const msg = JSON.parse(m);
+            const msg = m;
             this.setState({
                 myOnion: msg.onion,
                 contacts: msg.contacts
             });
         });
         socket.on(commands.GET_USER_MESSAGES, (m) => {
-            const msg = JSON.parse(m);
+            const msg = m;
             const onion = msg.onion;
             const messages = msg.messages;
             this.setState(prevState => ({
