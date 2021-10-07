@@ -178,7 +178,7 @@ class View extends React.Component {
 
 
     componentDidMount() {
-        const socket = io(`http://loclhost:1000`); // FIXME
+        const socket = io(`http://loclhost:5000`); // FIXME
         this.setState({socket: socket});
         socket.on(commands.ADD_USER, (m) => {
             console.log("add user");
