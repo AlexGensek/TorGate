@@ -1,16 +1,21 @@
 import sqlite3
 from datetime import datetime
 
-def get_connection(dbfile):
-    return sqlite3.connect(dbfile)
+DBFILE="database.db"
 
-def drop_tables(conn):
+def set_dbfile(dbfile):
+    DBFILE=dbfile
+
+def drop_tables():
+    conn = sqlite3.connect(DBFILE)
     c = conn.cursor()
-    c.execute('DROP TABLE USERS')
-    c.execute('DROP TABLE MESSAGES')
+    c.execute('DROP TABLE IF EXISTS USERS')
+    c.execute('DROP TABLE IF EXISTS MESSAGES')
     conn.commit()
+    conn.close()
 
-def create_tables(conn):
+def create_tables():
+    conn = sqlite3.connect(DBFILE)
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS USERS
                 (onion VARCHAR PRIMARY KEY, username VARCHAR)''')
@@ -24,23 +29,32 @@ def create_tables(conn):
 
     conn.commit()
     
-def add_user(conn, onion, username):
+def add_user(onion, username):
+    print(DBFILE, onion, username)
+    conn = sqlite3.connect(DBFILE)
     c = conn.cursor()
     user = (onion, username)
+    print(user)
     c.execute('INSERT INTO USERS VALUES(?, ?)', user)
     conn.commit()
+    conn.close()
 
-def get_users(conn):
+def get_users():
+    conn = sqlite3.connect(DBFILE)
     c = conn.cursor()
-    c.execute('''SELECT * FROM USERS;''')
+    c.execute('SELECT * FROM USERS')
 
     rows = c.fetchall()
     for row in rows:
         print(row)
 
+    print("get_users " + str(rows))
+    conn.close()
+
     return rows
 
-def get_user_messages(conn, onion):
+def get_user_messages(onion):
+    conn = sqlite3.connect(DBFILE)
     c = conn.cursor()
     c.execute('SELECT * FROM MESSAGES WHERE chat=?', (onion, ))
 
@@ -48,32 +62,38 @@ def get_user_messages(conn, onion):
     for row in rows:
         print(row)
 
+    conn.close()
     return rows
 
-def add_user_message(conn, onion, message, direction):
+def add_user_message(onion, message, direction):
+    conn = sqlite3.connect(DBFILE)
+
     timestamp = datetime.now()
     msg = (timestamp, message, onion, direction)
+    print(msg)
 
     c = conn.cursor()
     c.execute('INSERT INTO MESSAGES(time, message, chat, direction) VALUES(?, ?, ?, ?)', msg)
     conn.commit()
+    conn.close()
 
 
-def fill_messages(conn, onion, messages):
+def fill_messages(onion, messages):
+    conn = sqlite3.connect(DBFILE)
     for msg, direction in messages:
-        add_user_message(conn, onion, msg, direction)
+        add_user_message(onion, msg, direction)
+    conn.close()
 
 def main(argv):
     print(argv)
 
-    conn = get_connection("database.db")
-    drop_tables(conn)
-    create_tables(conn)
-    add_user(conn, "flibustahezeous3.onion", "Flibusta John")
-    add_user(conn, "zqktlwi4fecvo6ri.onion", "The Hidden Wiki")
-    add_user(conn, "3g2upl4pq6kufc4m.onion", "Duck DuckGo")
+    drop_tables()
+    create_tables()
+    add_user("flibustahezeous3.onion", "Flibusta John")
+    add_user("zqktlwi4fecvo6ri.onion", "The Hidden Wiki")
+    add_user("3g2upl4pq6kufc4m.onion", "Duck DuckGo")
 
-    fill_messages(conn, "flibustahezeous3.onion", [
+    fill_messages("flibustahezeous3.onion", [
         ("Hello there!", 1),
         ("A have a lot books)", 0),
         ("Give me some!", 1),
@@ -81,7 +101,7 @@ def main(argv):
         ("Siriusly?", 1),
     ])
 
-    fill_messages(conn, "zqktlwi4fecvo6ri.onion", [
+    fill_messages("zqktlwi4fecvo6ri.onion", [
         ("Hello Wiki!", 1),
         ("See my new articles", 0),
         ("Show me some interesting", 1),
@@ -89,7 +109,7 @@ def main(argv):
         ("Ebat kolotit", 1),
     ])
 
-    fill_messages(conn, "3g2upl4pq6kufc4m.onion", [
+    fill_messages("3g2upl4pq6kufc4m.onion", [
         ("dezentralization chat without sms", 1),
         ("What?", 0),
         ("Just show me all about it", 1),
@@ -97,7 +117,7 @@ def main(argv):
         ("I want to copy", 1),
     ])
 
-    get_users(conn)
+    get_users()
 
     onions = [
         "flibustahezeous3.onion",
@@ -107,7 +127,14 @@ def main(argv):
 
     for chat in onions:
         print(f"Messages from {chat}")
-        get_user_messages(conn, chat)
+        get_user_messages(chat)
+
+    users = [
+            {"username":username, "onion":onion} 
+                for (onion, username) in get_users()
+        ]
+
+    print(users)
 
 if __name__ == "__main__":
     main(__name__)
