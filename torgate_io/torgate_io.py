@@ -50,7 +50,7 @@ class SockServer(object):
             bashCmd = ["nc", "-l", "-p", "5555"]
             process = subprocess.Popen(bashCmd, stdout=subprocess.PIPE)
             output, error = process.communicate()
-            print(output)
+            data = output
             # client, address = self.sock.accept()
             # print("New connection accepted")
             # ts_start = time.time()
@@ -58,10 +58,10 @@ class SockServer(object):
             # while(ts_current - ts_start < RX_TIMEOUT):
             #     data = client.recv(1024)
             #     ts_current = time.time()
-            # print("Received %s bytes" % len(data))
-            # if(len(data) > 0):
-            #     data_deserialized = json.loads(data)
-            # self.sendDataToFrontend(data_deserialized['message'], data_deserialized['sender_address'])
+            print("Received %s bytes" % len(data))
+            if(len(data) > 0):
+                data_deserialized = json.loads(data)
+            self.sendDataToFrontend(data_deserialized['message'], data_deserialized['sender_address'])
 
         
     
