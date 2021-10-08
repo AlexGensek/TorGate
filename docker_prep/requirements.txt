@@ -1,4 +1,4 @@
 torpy==1.1.6
 Flask==2.0.2
 requests==2.22.0
-
+flask_socketio==5.1.1
