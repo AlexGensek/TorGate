@@ -8,6 +8,8 @@ TEST_HOSTNAME = 'k7a2o3ftuipxa4ov.onion'
 TEST_DATA = b'test_raz_dva_tri'
 
 def sendMessage(hostname, data):
+    print('sendMessage')
+    print(data)
     with TorClient() as tor:
         # Choose random guard node and create 3-hops circuit
         with tor.create_circuit(3) as circuit:
@@ -39,7 +41,9 @@ class SockServer(object):
         while True:
             client, address = self.sock.accept()
             data = client.recv(1024)
-            self.sendDataToFrontend(data)
+            print("data len " + str(len(data)))
+            if len(data) > 0:
+                self.sendDataToFrontend(data)
         
     
 
