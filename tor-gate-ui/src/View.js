@@ -11,7 +11,7 @@ import {commands} from "./protocol";
 class View extends React.Component {
     state = {
         myOnion: "",
-        messages: {},
+        messages: {}
     }
 
     actions = {
@@ -220,23 +220,24 @@ class View extends React.Component {
         this.timer = null;
     }
 
-    render() {
-        const {
-            myOnion,
-            current,
-            contacts,
-            messages,
-        } = this.state
-        const {createRoom, createConvo, removeUserFromRoom} = this.actions
+//
+render() {
+    const {
+        myOnion,
+        current,
+        contacts,
+        messages,
+    } = this.state
+    const {createRoom, createConvo, removeUserFromRoom} = this.actions
 
-        return (
-            <main>
-                <aside data-open={true}>
-                    <UserHeader onion={myOnion}/>
+    return (
+        <main>
+            <aside data-open={true}>
+                <UserHeader onion={myOnion}/>
                     <ChatList
-                        user={myOnion}
-                        contacts={contacts}
-                        messages={messages || {}}
+                        user={myOnion || "123"}
+                        contacts={contacts || [{onion: "onion1", username: "u"}]}
+                        messages={current && messages[current.onion]}
                         current={current || {}}
                         actions={this.actions}
                     />
@@ -250,7 +251,7 @@ class View extends React.Component {
                                     <col->
                                         <MessageList
                                             contact={current}
-                                            messages={messages[current]}
+                                            messages={current && messages[current.onion]}
                                         />
                                         <CreateMessageForm state={this.state} actions={this.actions}/>
                                     </col->
