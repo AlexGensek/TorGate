@@ -11,7 +11,7 @@ import torgate_io.torgate_io as tio
 
 
 async_mode = None
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='', static_folder='tor-gate-ui/build')
 app.config['SECRET_KEY'] = 'secret!'
 socket_ = SocketIO(app, async_mode=async_mode, cors_allowed_origins="*")
 thread = None
@@ -21,9 +21,10 @@ thread_lock = Lock()
 DB_NAME = "database.db"
 MY_ONION = ""
 
-@app.route('/')
-def index():
-    return render_template('index.html', async_mode=socket_.async_mode)
+@app.route('/', defaults={'path':''})
+def serve():
+    return send_from_directory(app.static_folder,'index.html')
+    #return render_template('index.html', async_mode=socket_.async_mode)
 
 
 @socket_.on('ADD_USER')
@@ -126,7 +127,7 @@ def test_db():
 
 if __name__ == '__main__':
     hh = '/usr/tor/hostname'
-    hh = '/home/alex/work/hakaton/hidden_service/hostname'
+    hh = '/tmp/hostname'
     print(hh)
 
     while MY_ONION == "":
