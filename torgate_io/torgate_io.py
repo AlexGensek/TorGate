@@ -17,16 +17,19 @@ def sendMessage(hostname, data):
 
 
 class SockServer(object):
-    def __init__(self, host, port):
+    def __init__(self, host, port, callback=None):
         self.client = ''
         self.host = host
         self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind((self.host, self.port))
+        self.callback=callback
 
     def sendDataToFrontend(self, data):
-        print(data)    
+        print(data)
+        if self.callback != None:
+            self.callback(data)
 
     def handleIncomingConnections(self):
         threading.Thread(target = self.listen).start()  

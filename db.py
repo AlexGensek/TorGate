@@ -30,11 +30,11 @@ def create_tables():
     conn.commit()
     
 def add_user(onion, username):
-    print(DBFILE, onion, username)
+    # print(DBFILE, onion, username)
     conn = sqlite3.connect(DBFILE)
     c = conn.cursor()
     user = (onion, username)
-    print(user)
+    # print(user)
     c.execute('INSERT INTO USERS VALUES(?, ?)', user)
     conn.commit()
     conn.close()
@@ -45,10 +45,10 @@ def get_users():
     c.execute('SELECT * FROM USERS')
 
     rows = c.fetchall()
-    for row in rows:
-        print(row)
+    # for row in rows:
+    #     print(row)
 
-    print("get_users " + str(rows))
+    # print("get_users " + str(rows))
     conn.close()
 
     return rows
@@ -59,18 +59,18 @@ def get_user_messages(onion):
     c.execute('SELECT * FROM MESSAGES WHERE chat=?', (onion, ))
 
     rows = c.fetchall()
-    for row in rows:
-        print(row)
+    # for row in rows:
+    #     print(row)
 
     conn.close()
     return rows
 
-def add_user_message(onion, message, direction):
+def add_user_message(onion, timestamp, message, direction):
     conn = sqlite3.connect(DBFILE)
 
-    timestamp = datetime.now()
+    # timestamp = datetime.now()
     msg = (timestamp, message, onion, direction)
-    print(msg)
+    # print(msg)
 
     c = conn.cursor()
     c.execute('INSERT INTO MESSAGES(time, message, chat, direction) VALUES(?, ?, ?, ?)', msg)
