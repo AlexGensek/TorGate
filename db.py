@@ -81,7 +81,7 @@ def add_user_message(onion, timestamp, message, direction):
 def fill_messages(onion, messages):
     conn = sqlite3.connect(DBFILE)
     for msg, direction in messages:
-        add_user_message(onion, msg, direction)
+        add_user_message(onion, datetime.now(), msg, direction)
     conn.close()
 
 def main(argv):
