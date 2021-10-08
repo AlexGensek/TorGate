@@ -66,6 +66,10 @@ def get_user_messages(message):
         emit('GET_USER_MESSAGES', {'onion': message['onion'], 'messages':messages})
 
 def new_user_message(data):
+    print("data " + str(data))
+    if data == "":
+        return
+
     msg = json.loads(data)
     onion = msg["from"]
     message = msg["message"]
@@ -82,19 +86,31 @@ def new_user_message(data):
 
 @socket_.on('SEND_USER_MESSAGE')
 def send_user_message(message):
+    print('SEND_USER_MESSAGE')
+    print(message)
     try:
         timestamp = datetime.now()
         msg = message['message']
-        tio.sendMessage(message['onion'], f'{"from": {MY_ONION}, "message": {msg}}')
+
+        my_onion = MY_ONION
+        m = {
+            "from":my_onion,
+            "message":msg
+        }
+
+        # tio.sendMessage(message['onion'], f'{"from": \"{MY_ONION}\", "message": \"{msg}\"}')
+        print(json.dumps(m))
         db.add_user_message(message['onion'], timestamp, message['message'], 1)
+        tio.sendMessage(message['onion'], json.dumps(m))
     except Exception:
-        emit('SEND_USER_MESSAGE', {'status': Exception})
+        emit('SEND_USER_MESSAGE', {'status': str(Exception)})
     else:
         emit('SEND_USER_MESSAGE', {'status': 'success'})
 
 def test_db():
     db.drop_tables()
     db.create_tables()
+    db.add_user(MY_ONION, "Me")
     db.add_user("flibustahezeous3.onion", "Flibusta John")
     db.add_user("zqktlwi4fecvo6ri.onion", "The Hidden Wiki")
     db.add_user("3g2upl4pq6kufc4m.onion", "Duck DuckGo")
