@@ -12,7 +12,7 @@ export const AddContactForm = ({ submit }) => (
       e.target[0].value = ''
     }}
   >
-    <input placeholder="Create a Room" type="text" required />
+    <input placeholder="Add contact.." type="text" required />
     <button type="submit">
       <svg>
         <use xlinkHref="index.svg#add" />

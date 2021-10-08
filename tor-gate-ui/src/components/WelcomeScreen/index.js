@@ -14,9 +14,9 @@ export const WelcomeScreen = () => (
         </svg>
       </span>
       <p>
-        Authenticating, subscribing to rooms
+        Security communication is easy
         <br />
-        and fetching messages.
+        fetch messages using Tor.
       </p>
     </div>
   </section>
