@@ -1,12 +1,17 @@
+import time
+import json
+from datetime import datetime
+
 from flask import Flask, render_template, session, copy_current_request_context
 from flask_socketio import SocketIO, emit, disconnect
 from threading import Lock
 
 import db
+import torgate_io.torgate_io as tio
 
 
 async_mode = None
-app = Flask(__name__)
+app = Flask(__name__, static_folder='./tor-gate-ui/build/', static_url_path='/')
 app.config['SECRET_KEY'] = 'secret!'
 socket_ = SocketIO(app, async_mode=async_mode, cors_allowed_origins="*")
 thread = None
@@ -14,19 +19,20 @@ thread_lock = Lock()
 
 
 DB_NAME = "database.db"
-MY_ONION = "facebookcorewwwi.onion"
+MY_ONION = ""
 
 @app.route('/')
 def index():
-    return render_template('index.html', async_mode=socket_.async_mode)
+    return app.send_static_file('index.html')
+    #return render_template('index.html', async_mode=socket_.async_mode)
 
 
 @socket_.on('ADD_USER')
 def add_user(message):
     try:
         db.add_user(message['onion'], message['username'])
-    except:
-        emit('ADD_USER', {'status': 'db.add_user ERROR'})
+    except Exception:
+        emit('ADD_USER', {'status': Exception})
     else:
         emit('ADD_USER', {'status': 'success'})
 
@@ -36,10 +42,8 @@ def get_users(message):
     users = []
     try:
         u = db.get_users()
-        print(u)
         users = [{"username":username, "onion":onion} for (onion, username) in u]
     except Exception:
-        # emit('GET_USERS', {'status': 'db.get_users ERROR'})
         emit('GET_USERS', {'status': Exception})
     else:
         emit('GET_USERS', {'onion': MY_ONION, 'contacts':users})
@@ -47,69 +51,67 @@ def get_users(message):
 
 @socket_.on('GET_USER_MESSAGES')
 def get_user_messages(message):
-    print("GET_USER_MESSAGES " + str(message))
+    # print('GET_USER_MESSAGES')
+    # print(message)
     messages = []
     try:
         messages = [
             {"timestamp":timestamp, "message":msg, "direction":d} 
                 for (uid, timestamp, msg, username, d) in db.get_user_messages(message['onion'])
         ]
-    except:
-        emit('GET_USER_MESSAGES', {'status': 'db.get_user_messages ERROR'})
+        # print(messages)
+    except Exception:
+        emit('GET_USER_MESSAGES', {'status': Exception})
     else:
         
         emit('GET_USER_MESSAGES', {'onion': message['onion'], 'messages':messages})
 
-# @socket_.on('NEW_USER_MESSAGE')
-# def test_broadcast_message(message):
-#     session['receive_count'] = session.get('receive_count', 0) + 1
-#     emit('my_response',
-#          {'data': message['data'], 'count': session['receive_count']},
-#          broadcast=True)
+def new_user_message(data):
+    print("data " + str(data))
+    if data == "":
+        return
+
+    msg = json.loads(data)
+    onion = msg["from"]
+    message = msg["message"]
+    timestamp = datetime.now()
+
+    db.add_user_message(onion, timestamp, message, 0)
+    emit('NEW_USER_MESSAGE', {'onion':onion, "messages":[
+        {
+            "timestamp":timestamp,
+            "message":message,
+            "direction":0
+        }
+    ]})
 
 @socket_.on('SEND_USER_MESSAGE')
 def send_user_message(message):
+    print('SEND_USER_MESSAGE')
+    print(message)
     try:
-        db.add_user_message(message['onion'], message['message'], 1)
-    except:
-        emit('SEND_USER_MESSAGE', {'status': 'db.send_user_message ERROR'})
+        timestamp = datetime.now()
+        msg = message['message']
+
+        my_onion = MY_ONION
+        m = {
+            "from":my_onion,
+            "message":msg
+        }
+
+        # tio.sendMessage(message['onion'], f'{"from": \"{MY_ONION}\", "message": \"{msg}\"}')
+        print(json.dumps(m))
+        db.add_user_message(message['onion'], timestamp, message['message'], 1)
+        tio.sendMessage(message['onion'], json.dumps(m))
+    except Exception:
+        emit('SEND_USER_MESSAGE', {'status': str(Exception)})
     else:
         emit('SEND_USER_MESSAGE', {'status': 'success'})
-
-
-
-
-
-
-@socket_.on('my_event', namespace='/test')
-def test_message(message):
-    session['receive_count'] = session.get('receive_count', 0) + 1
-    emit('my_response',
-         {'data': message['data'], 'count': session['receive_count']})
-
-
-@socket_.on('my_broadcast_event', namespace='/test')
-def test_broadcast_message(message):
-    session['receive_count'] = session.get('receive_count', 0) + 1
-    emit('my_response',
-         {'data': message['data'], 'count': session['receive_count']},
-         broadcast=True)
-
-
-@socket_.on('disconnect_request', namespace='/test')
-def disconnect_request():
-    @copy_current_request_context
-    def can_disconnect():
-        disconnect()
-
-    session['receive_count'] = session.get('receive_count', 0) + 1
-    emit('my_response',
-         {'data': 'Disconnected!', 'count': session['receive_count']},
-         callback=can_disconnect)
 
 def test_db():
     db.drop_tables()
     db.create_tables()
+    db.add_user(MY_ONION, "Me")
     db.add_user("flibustahezeous3.onion", "Flibusta John")
     db.add_user("zqktlwi4fecvo6ri.onion", "The Hidden Wiki")
     db.add_user("3g2upl4pq6kufc4m.onion", "Duck DuckGo")
@@ -140,6 +142,20 @@ def test_db():
 
 
 if __name__ == '__main__':
-    test_db()
+    hh = '/usr/tor/hostname'
+    hh = '/home/alex/work/hakaton/hidden_service/hostname'
+    print(hh)
 
-    socket_.run(app, debug=True)
+    while MY_ONION == "":
+        with open(hh) as f:
+            MY_ONION = f.readline().rstrip()
+
+        if MY_ONION == "":
+            time.sleep(2)
+
+    print("My onion hostname |" + MY_ONION + "|")
+    
+    test_db()
+    tio.SockServer('localhost', tio.HIDDEN_SERVICE_PORT, new_user_message).handleIncomingConnections()
+    # socket_.run(app, debug=True)
+    socket_.run(app)

@@ -10,9 +10,9 @@ export const ChatList = ({
                          }) => (
     <ul className={style.component}>
         {contacts.map(contact => {
-            const messageKeys = Object.keys(messages[contact.onion] || {});
-            const latestMessage =
-                messageKeys.length > 0 && messages[contact.onion][messageKeys.pop()]
+            // const messageKeys = Object.keys(messages[contact.onion] || {});
+            // const latestMessage =
+            //     messageKeys.length > 0 && messages[contact.onion][messageKeys.pop()]
 
             return (
                 <li
@@ -23,7 +23,7 @@ export const ChatList = ({
                 >
                     <col->
                         <p>{contact.username}</p>
-                        <span>{latestMessage && latestMessage.text}</span>
+                        {/*<span>{latestMessage && latestMessage.text}</span>*/}
                     </col->
                 </li>
             )

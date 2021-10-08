@@ -25,28 +25,21 @@ def sendMessage(this_hostname, other_hostname, data):
     print("Message %s was sent" % message_serialized)
     
 
-    # with TorClient() as tor:
-    #     # Choose random guard node and create 3-hops circuit
-    #     with tor.create_circuit(3) as circuit:
-    #         # Create tor stream to host
-    #         with circuit.create_stream((other_hostname, HIDDEN_SERVICE_PORT)) as stream:
-    #             message = {"sender_address": this_hostname, "message": data}
-    #             message_serialized = str(json.dumps(message)).encode()
-    #             print(message_serialized)
-    #             stream.send(message_serialized)
-    #             print("Message %s was sent" % message_serialized)
-
-
 class SockServer(object):
-    def __init__(self, host, port):
+    def __init__(self, host, port, callback=None):
+        self.client = ''
         self.host = host
         self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # self.sock.bind((self.host, self.port))
-        # self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sock.bind((self.host, self.port))
+        self.callback=callback
 
-    def sendDataToFrontend(self, data, sender_address):
-        print("Received : %s from %s" % (data, sender_address))   
+    def sendDataToFrontend(self, data):
+        print(data)
+        if self.callback != None:
+            self.callback(data)
+
 
     def handleIncomingConnections(self):
         threading.Thread(target = self.listen).start()  
@@ -69,6 +62,7 @@ class SockServer(object):
             # if(len(data) > 0):
             #     data_deserialized = json.loads(data)
             # self.sendDataToFrontend(data_deserialized['message'], data_deserialized['sender_address'])
+
         
     
 

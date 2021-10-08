@@ -5,7 +5,7 @@ export const RoomHeader = ({
   state: {current},
   actions: { setSidebar, setUserList },
 }) => (
-  <header className={style.component}>
-      {current && <h1>{current.username}</h1>}
-  </header>
+        <header className={style.component}>
+            {current && <h1>{current.username}</h1>}
+        </header>
 )
