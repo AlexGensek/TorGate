@@ -178,7 +178,7 @@ class View extends React.Component {
 
 
     componentDidMount() {
-        const socket = io(`http://localhost:5000`); // FIXME
+        const socket = io(`http://127.0.0.1:5000`); // FIXME
         this.setState({socket: socket});
         socket.on(commands.ADD_USER, (m) => {
             console.log("add user");
@@ -213,7 +213,7 @@ class View extends React.Component {
             this.actions.getUsers(socket);
             this.state.current &&
                 this.actions.getUserMessages(socket, this.state.current.onion);
-            }, 1000);
+            }, 10000);
     }
 
     componentWillUnmount() {
