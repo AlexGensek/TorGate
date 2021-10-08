@@ -6,10 +6,10 @@ export const AddContactForm = ({submit}) => (
         className={style.component}
         onSubmit={e => {
             e.preventDefault()
-            submit({
-                username: e.target[0].value,
-                onion: e.target[1].value,
-            })
+            submit(
+                e.target[0].value,
+                e.target[1].value
+            )
 
             e.target[0].value = ''
             e.target[1].value = ''
