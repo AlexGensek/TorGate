@@ -1,5 +1,6 @@
 import React from 'react';
 import io from 'socket.io-client';
+import './index.css'
 import {UserHeader} from "./components/UserHeader";
 import {RoomHeader} from "./components/RoomHeader";
 import {WelcomeScreen} from "./components/WelcomeScreen";
@@ -7,11 +8,12 @@ import {ChatList} from "./components/ChatList";
 import {CreateMessageForm} from "./components/CreateMessageForm";
 import {MessageList} from "./components/MessageList";
 import {commands} from "./protocol";
+import {AddContactForm} from "./components/AddContactForm";
 
 class View extends React.Component {
     state = {
         myOnion: "",
-        messages: {},
+        messages: {}
     }
 
     actions = {
@@ -160,38 +162,42 @@ class View extends React.Component {
             }
         },
 
+        addUser: (socket, onion) => {
+            socket.emit(commands.ADD_USER, onion);
+        },
+
         getUsers: socket => {
-            socket.emit(commands.GET_USERS, JSON.stringify({}));
+            socket.emit(commands.GET_USERS, {});
         },
 
         getUserMessages: (socket, onion) => {
-            socket.emit(commands.GET_USER_MESSAGES, JSON.stringify({onion: onion}));
+            onion && socket.emit(commands.GET_USER_MESSAGES, {onion: onion});
         },
 
         sendMessage: (socket, onion, message) => {
-            socket.emit(commands.SEND_USER_MESSAGE, JSON.stringify({
+            socket.emit(commands.SEND_USER_MESSAGE, {
                 onion: onion,
                 message: message
-            }));
+            });
         }
     }
 
 
     componentDidMount() {
-        const socket = io(`http://loclhost:5000`); // FIXME
+        const socket = io(`http://127.0.0.1:5000`); // FIXME
         this.setState({socket: socket});
         socket.on(commands.ADD_USER, (m) => {
             console.log("add user");
         });
         socket.on(commands.GET_USERS, (m) => {
-            const msg = JSON.parse(m);
+            const msg = m;
             this.setState({
                 myOnion: msg.onion,
                 contacts: msg.contacts
             });
         });
         socket.on(commands.GET_USER_MESSAGES, (m) => {
-            const msg = JSON.parse(m);
+            const msg = m;
             const onion = msg.onion;
             const messages = msg.messages;
             this.setState(prevState => ({
@@ -211,8 +217,9 @@ class View extends React.Component {
 
         this.timer = setInterval(() => {
             this.actions.getUsers(socket);
-            this.actions.getUserMessages(socket);
-            }, 1000);
+            this.state.current &&
+                this.actions.getUserMessages(socket, this.state.current.onion);
+            }, 10000);
     }
 
     componentWillUnmount() {
@@ -225,20 +232,24 @@ class View extends React.Component {
             current,
             contacts,
             messages,
+            socket
         } = this.state
-        const {createRoom, createConvo, removeUserFromRoom} = this.actions
+        const {addUser} = this.actions
 
         return (
             <main>
                 <aside data-open={true}>
-                    <UserHeader onion={myOnion}/>
+                    <UserHeader onion={myOnion} onClick={() => this.setState({addContactModalShow:true})}/>
                     <ChatList
                         user={myOnion}
                         contacts={contacts}
-                        messages={messages || {}}
+                        messages={current && messages[current.onion]}
                         current={current || {}}
                         actions={this.actions}
                     />
+                    <AddContactForm submit={(onion) => {
+                        addUser(socket, onion);
+                    }}/>
 
                 </aside>
                 <section>
@@ -249,7 +260,7 @@ class View extends React.Component {
                                     <col->
                                         <MessageList
                                             contact={current}
-                                            messages={messages[current]}
+                                            messages={current && messages[current.onion]}
                                         />
                                         <CreateMessageForm state={this.state} actions={this.actions}/>
                                     </col->

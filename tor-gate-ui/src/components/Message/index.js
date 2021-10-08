@@ -2,43 +2,22 @@ import React from 'react'
 import style from './index.module.css'
 import Linkify from 'react-linkify'
 
-const time = string => {
-  const date = new Date(string)
-  const minutes = date.getMinutes()
-  return `${date.getHours()}:${minutes < 10 ? '0' + minutes : minutes}`
+export class Message extends React.Component {
+    render() {
+        const contact = this.props.contact;
+        const msg = this.props.message;
+        return (
+            this.props.message && (
+                <li key={msg.timestamp} className={style.component}>
+                    <div>
+                        <span> <b>{(msg.direction === 0) ? contact.username : "Me"}</b> </span>
+                        <span>{msg.timestamp}</span>
+                        <p>
+                            <Linkify properties={{target: '_blank'}}>{msg.message}</Linkify>
+                        </p>
+                    </div>
+                </li>
+            )
+        )
+    }
 }
-
-class Attachment extends React.Component {
-  componentDidMount() {
-    if (this.props.link) this.setState({ src: this.props.link });
-  }
-  render() {
-    return this.state
-      ? {
-          image: (
-            <img controls={true} src={this.state.src} alt={this.state.name} />
-          ),
-          video: <video controls={true} src={this.state.src} />,
-          audio: <audio controls={true} src={this.state.src} />,
-          file: (
-            <a href={this.state.src} download>
-              Download File
-            </a>
-          ),
-        }[this.props.type]
-      : null
-  }
-}
-
-export const Message = ({ contact }) => message =>
-  message && (
-    <li key={message.timestamp} className={style.component}>
-      <div>
-        {/*<span>{`${message.sender.name} | ${time(message.createdAt)}`}</span>*/}
-          <span>name</span>
-        <p>
-          <Linkify properties={{ target: '_blank' }}>{message.message}</Linkify>
-        </p>
-      </div>
-    </li>
-  )
