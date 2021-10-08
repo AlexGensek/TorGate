@@ -7,7 +7,7 @@ COPY docker_prep/torrc /etc/tor/torrc
 
 ENV TZ=Europe/Moscow
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-RUN apt-get update && apt-get install -y python3-pip wget libevent-dev
+RUN apt-get update && apt-get install -y python3-pip wget libevent-dev netcat
 RUN pip install --no-cache-dir -r requirements.txt
 
 RUN mkdir -p /usr/tor && chmod 700 /usr/tor
