@@ -162,8 +162,8 @@ class View extends React.Component {
             }
         },
 
-        addUser: (socket, onion) => {
-            socket.emit(commands.ADD_USER, onion);
+        addUser: (socket, username, onion) => {
+            socket.emit(commands.ADD_USER, {username: username, onion: onion});
         },
 
         getUsers: socket => {
@@ -247,8 +247,8 @@ class View extends React.Component {
                         current={current || {}}
                         actions={this.actions}
                     />
-                    <AddContactForm submit={(onion) => {
-                        addUser(socket, onion);
+                    <AddContactForm submit={(username, onion) => {
+                        addUser(socket, username, onion);
                     }}/>
 
                 </aside>
