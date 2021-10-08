@@ -18,7 +18,7 @@ export const MessageList = ({messages, contact}) => {
             {messages ? (
                 <wrapper->
                     {
-                        messages && messages.map(m => <Message message={m} contact={contact}/>)
+                        messages && messages.reverse().map(m => <Message message={m} contact={contact}/>)
                     }
                 </wrapper->
             ) : (
