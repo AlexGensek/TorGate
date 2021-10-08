@@ -219,7 +219,7 @@ class View extends React.Component {
             this.actions.getUsers(socket);
             this.state.current &&
                 this.actions.getUserMessages(socket, this.state.current.onion);
-            }, 1000);
+            }, 3000);
     }
 
     componentWillUnmount() {

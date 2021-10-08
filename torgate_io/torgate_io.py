@@ -14,15 +14,15 @@ TEST_DATA = 'test_raz_dva_tri'
 
 RX_TIMEOUT = 2
 
-def sendMessage(this_hostname, other_hostname, data):
+def sendMessage(hostname, data):
     socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", 9050, True)
     s = socks.socksocket()
-    s.connect((TEST_HOSTNAME, 5555))
-    message = {"sender_address": this_hostname, "message": data}
-    message_serialized = str(json.dumps(message)).encode()
-    print(message_serialized)
-    s.sendall(message_serialized)
-    print("Message %s was sent" % message_serialized)
+    s.connect((hostname, 5555))
+    # message = {"sender_address": this_hostname, "message": data}
+    # message_serialized = str(json.dumps(message)).encode()
+    print("sendMessage" + data)
+    s.sendall(data.encode())
+    print("Message %s was sent" % data)
     
 
 class SockServer(object):
@@ -59,9 +59,12 @@ class SockServer(object):
             #     data = client.recv(1024)
             #     ts_current = time.time()
             print("Received %s bytes" % len(data))
-            if(len(data) > 0):
-                data_deserialized = json.loads(data)
-            self.sendDataToFrontend(data_deserialized['message'], data_deserialized['sender_address'])
+            if (len(data) > 0):
+                # data_deserialized = json.loads(data)
+                # data_deserialized = data
+                self.sendDataToFrontend(data)
+            # self.sendDataToFrontend(data_deserialized['message'], data_deserialized['sender_address'])
+            # self.sendDataToFrontend(data_deserialized)
 
         
     
