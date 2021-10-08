@@ -19,7 +19,7 @@ thread_lock = Lock()
 
 
 DB_NAME = "database.db"
-MY_ONION = "facebookcorewwwi.onion"
+MY_ONION = ""
 
 @app.route('/')
 def index():
@@ -50,24 +50,20 @@ def get_users(message):
 
 @socket_.on('GET_USER_MESSAGES')
 def get_user_messages(message):
+    # print('GET_USER_MESSAGES')
+    # print(message)
     messages = []
     try:
         messages = [
             {"timestamp":timestamp, "message":msg, "direction":d} 
                 for (uid, timestamp, msg, username, d) in db.get_user_messages(message['onion'])
         ]
+        # print(messages)
     except Exception:
         emit('GET_USER_MESSAGES', {'status': Exception})
     else:
         
         emit('GET_USER_MESSAGES', {'onion': message['onion'], 'messages':messages})
-
-# @socket_.on('NEW_USER_MESSAGE')
-# def test_broadcast_message(message):
-#     session['receive_count'] = session.get('receive_count', 0) + 1
-#     emit('my_response',
-#          {'data': message['data'], 'count': session['receive_count']},
-#          broadcast=True)
 
 def new_user_message(data):
     msg = json.loads(data)
@@ -83,8 +79,6 @@ def new_user_message(data):
             "direction":0
         }
     ]})
-
-tio.SockServer('localhost', tio.HIDDEN_SERVICE_PORT, new_user_message).handleIncomingConnections()
 
 @socket_.on('SEND_USER_MESSAGE')
 def send_user_message(message):
@@ -145,5 +139,6 @@ if __name__ == '__main__':
     print("My onion hostname |" + MY_ONION + "|")
     
     test_db()
-
-    socket_.run(app, debug=True)
+    tio.SockServer('localhost', tio.HIDDEN_SERVICE_PORT, new_user_message).handleIncomingConnections()
+    # socket_.run(app, debug=True)
+    socket_.run(app)
