@@ -67,8 +67,8 @@ def get_user_messages(message):
         emit('GET_USER_MESSAGES', {'onion': message['onion'], 'messages':messages})
 
 def new_user_message(data):
-    # print("new_user_message")
-    # print("data " + str(data))
+    print("new_user_message")
+    print("data " + str(data))
     if data == "":
         return
 
@@ -89,8 +89,8 @@ def new_user_message(data):
 
 @socket_.on('SEND_USER_MESSAGE')
 def send_user_message(message):
-    # print('SEND_USER_MESSAGE')
-    # print(message)
+    print('SEND_USER_MESSAGE')
+    print(message)
     try:
         timestamp = datetime.now()
         msg = message['message']
@@ -157,6 +157,7 @@ if __name__ == '__main__':
 
     print("My onion hostname |" + MY_ONION + "|")
     
+    db.create_tables()
     # test_db()
     tio.SockServer('localhost', tio.HIDDEN_SERVICE_PORT, new_user_message).handleIncomingConnections()
     # socket_.run(app, debug=True)

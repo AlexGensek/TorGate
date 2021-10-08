@@ -56,7 +56,7 @@ def get_users():
 def get_user_messages(onion):
     conn = sqlite3.connect(DBFILE)
     c = conn.cursor()
-    c.execute('SELECT * FROM MESSAGES WHERE chat=?', (onion, ))
+    c.execute('SELECT * FROM MESSAGES WHERE chat=? ORDER BY time DESC', (onion, ))
 
     rows = c.fetchall()
     # for row in rows:

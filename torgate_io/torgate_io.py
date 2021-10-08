@@ -18,11 +18,9 @@ def sendMessage(hostname, data):
     socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, "127.0.0.1", 9050, True)
     s = socks.socksocket()
     s.connect((hostname, 5555))
-    # message = {"sender_address": this_hostname, "message": data}
-    # message_serialized = str(json.dumps(message)).encode()
-    # print("sendMessage" + data)
+    print("sendMessage" + data)
     s.sendall(data.encode())
-    # print("Message %s was sent" % data)
+    print("Message %s was sent" % data)
     
 
 class SockServer(object):
@@ -51,24 +49,8 @@ class SockServer(object):
             process = subprocess.Popen(bashCmd, stdout=subprocess.PIPE)
             output, error = process.communicate()
             data = output
-            # client, address = self.sock.accept()
-            # print("New connection accepted")
-            # ts_start = time.time()
-            # ts_current = time.time()
-            # while(ts_current - ts_start < RX_TIMEOUT):
-            #     data = client.recv(1024)
-            #     ts_current = time.time()
-            # print("Received %s bytes" % len(data))
             if (len(data) > 0):
-                # data_deserialized = json.loads(data)
-                # data_deserialized = data
                 self.sendDataToFrontend(data)
-            # self.sendDataToFrontend(data_deserialized['message'], data_deserialized['sender_address'])
-            # self.sendDataToFrontend(data_deserialized)
-
-        
-    
-
     
 
 if __name__ == "__main__":
