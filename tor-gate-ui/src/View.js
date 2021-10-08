@@ -1,5 +1,6 @@
 import React from 'react';
 import io from 'socket.io-client';
+import './index.css'
 import {UserHeader} from "./components/UserHeader";
 import {RoomHeader} from "./components/RoomHeader";
 import {WelcomeScreen} from "./components/WelcomeScreen";
@@ -7,6 +8,7 @@ import {ChatList} from "./components/ChatList";
 import {CreateMessageForm} from "./components/CreateMessageForm";
 import {MessageList} from "./components/MessageList";
 import {commands} from "./protocol";
+import {AddContactForm} from "./components/AddContactForm";
 
 class View extends React.Component {
     state = {
@@ -160,12 +162,16 @@ class View extends React.Component {
             }
         },
 
+        addUser: (socket, onion) => {
+            socket.emit(commands.ADD_USER, onion);
+        },
+
         getUsers: socket => {
             socket.emit(commands.GET_USERS, {});
         },
 
         getUserMessages: (socket, onion) => {
-            onion && socket.emit(commands.GET_USER_MESSAGES,{onion: onion});
+            onion && socket.emit(commands.GET_USER_MESSAGES, {onion: onion});
         },
 
         sendMessage: (socket, onion, message) => {
@@ -220,27 +226,30 @@ class View extends React.Component {
         this.timer = null;
     }
 
-//
-render() {
-    const {
-        myOnion,
-        current,
-        contacts,
-        messages,
-    } = this.state
-    const {createRoom, createConvo, removeUserFromRoom} = this.actions
+    render() {
+        const {
+            myOnion,
+            current,
+            contacts,
+            messages,
+            socket
+        } = this.state
+        const {addUser} = this.actions
 
-    return (
-        <main>
-            <aside data-open={true}>
-                <UserHeader onion={myOnion}/>
+        return (
+            <main>
+                <aside data-open={true}>
+                    <UserHeader onion={myOnion} onClick={() => this.setState({addContactModalShow:true})}/>
                     <ChatList
-                        user={myOnion || "123"}
-                        contacts={contacts || [{onion: "onion1", username: "u"}]}
+                        user={myOnion}
+                        contacts={contacts}
                         messages={current && messages[current.onion]}
                         current={current || {}}
                         actions={this.actions}
                     />
+                    <AddContactForm submit={(onion) => {
+                        addUser(socket, onion);
+                    }}/>
 
                 </aside>
                 <section>
