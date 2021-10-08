@@ -67,8 +67,8 @@ def get_user_messages(message):
         emit('GET_USER_MESSAGES', {'onion': message['onion'], 'messages':messages})
 
 def new_user_message(data):
-    print("new_user_message")
-    print("data " + str(data))
+    # print("new_user_message")
+    # print("data " + str(data))
     if data == "":
         return
 
@@ -89,8 +89,8 @@ def new_user_message(data):
 
 @socket_.on('SEND_USER_MESSAGE')
 def send_user_message(message):
-    print('SEND_USER_MESSAGE')
-    print(message)
+    # print('SEND_USER_MESSAGE')
+    # print(message)
     try:
         timestamp = datetime.now()
         msg = message['message']
@@ -102,7 +102,7 @@ def send_user_message(message):
         }
 
         # tio.sendMessage(message['onion'], f'{"from": \"{MY_ONION}\", "message": \"{msg}\"}')
-        print(json.dumps(m))
+        # print(json.dumps(m))
         db.add_user_message(message['onion'], timestamp, message['message'], 1)
         tio.sendMessage(message['onion'], json.dumps(m))
     except Exception:
@@ -145,7 +145,7 @@ def test_db():
 
 if __name__ == '__main__':
     hh = '/usr/tor/hostname'
-    hh = '/home/alex/work/hakaton/hidden_service/hostname'
+    # hh = '/home/alex/work/hakaton/hidden_service/hostname'
     print(hh)
 
     while MY_ONION == "":
@@ -157,7 +157,7 @@ if __name__ == '__main__':
 
     print("My onion hostname |" + MY_ONION + "|")
     
-    test_db()
+    # test_db()
     tio.SockServer('localhost', tio.HIDDEN_SERVICE_PORT, new_user_message).handleIncomingConnections()
     # socket_.run(app, debug=True)
-    socket_.run(app, host="127.0.0.1")
+    socket_.run(app, host="0.0.0.0")

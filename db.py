@@ -66,7 +66,7 @@ def get_user_messages(onion):
     return rows
 
 def add_user_message(onion, timestamp, message, direction):
-    print("add_user_message " + message)
+    # print("add_user_message " + message)
     conn = sqlite3.connect(DBFILE)
 
     # timestamp = datetime.now()

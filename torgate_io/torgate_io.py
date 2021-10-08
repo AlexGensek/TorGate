@@ -20,9 +20,9 @@ def sendMessage(hostname, data):
     s.connect((hostname, 5555))
     # message = {"sender_address": this_hostname, "message": data}
     # message_serialized = str(json.dumps(message)).encode()
-    print("sendMessage" + data)
+    # print("sendMessage" + data)
     s.sendall(data.encode())
-    print("Message %s was sent" % data)
+    # print("Message %s was sent" % data)
     
 
 class SockServer(object):
@@ -58,7 +58,7 @@ class SockServer(object):
             # while(ts_current - ts_start < RX_TIMEOUT):
             #     data = client.recv(1024)
             #     ts_current = time.time()
-            print("Received %s bytes" % len(data))
+            # print("Received %s bytes" % len(data))
             if (len(data) > 0):
                 # data_deserialized = json.loads(data)
                 # data_deserialized = data
