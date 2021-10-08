@@ -199,11 +199,11 @@ class View extends React.Component {
         socket.on(commands.GET_USER_MESSAGES, (m) => {
             const msg = m;
             const onion = msg.onion;
-            const messages = msg.messages;
+            const messages = msg.messages.messages;
             this.setState(prevState => ({
                 messages: {
                     ...prevState.messages,
-                    [onion]: {messages}
+                    [onion]: messages
                 }
             }))
 
