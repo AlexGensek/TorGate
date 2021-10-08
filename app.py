@@ -11,7 +11,7 @@ import torgate_io.torgate_io as tio
 
 
 async_mode = None
-app = Flask(__name__)
+app = Flask(__name__, static_folder='./tor-gate-ui/build/', static_url_path='/')
 app.config['SECRET_KEY'] = 'secret!'
 socket_ = SocketIO(app, async_mode=async_mode, cors_allowed_origins="*")
 thread = None
@@ -23,7 +23,8 @@ MY_ONION = ""
 
 @app.route('/')
 def index():
-    return render_template('index.html', async_mode=socket_.async_mode)
+    return app.send_static_file('index.html')
+    #return render_template('index.html', async_mode=socket_.async_mode)
 
 
 @socket_.on('ADD_USER')
